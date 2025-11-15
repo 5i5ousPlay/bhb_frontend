@@ -2,7 +2,7 @@ import { CircleMarker } from "react-leaflet";
 import { useMap } from "react-leaflet";
 import { getBaseRadius } from "../../../utils/helpers";
 
-export function ZoomAwareCircleMarker({ children, h, center, color }: any) {
+export function ZoomAwareCircleMarker({ children, h, center, color, onClick }: any) {
     const map = useMap();
     const zoom = map.getZoom();
 
@@ -20,6 +20,10 @@ export function ZoomAwareCircleMarker({ children, h, center, color }: any) {
                 color,
                 fillColor: color,
                 fillOpacity: 0.7,
+            }}
+            eventHandlers={{
+                click: onClick,
+                mouseover: (e) => e.target.setStyle({ cursor: "pointer" })
             }}
         >
             {children}
