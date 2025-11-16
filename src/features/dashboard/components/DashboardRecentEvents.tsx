@@ -1,67 +1,204 @@
-import {Card, Grid, Paper, Typography} from "@mui/material";
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-
-// placeholder
-
-function createData(
-    name: string,
-    calories: number,
-    fat: number,
-    carbs: number,
-    protein: number,
-) {
-    return { name, calories, fat, carbs, protein };
-}
-
-const rows = [
-    createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
-    createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
-    createData('Eclair', 262, 16.0, 24, 6.0),
-    createData('Cupcake', 305, 3.7, 67, 4.3),
-    createData('Gingerbread', 356, 16.0, 49, 3.9),
-];
-
+import {
+    Card,
+    Grid,
+    Paper,
+    Typography,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Button,
+    useTheme,
+    Box,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { useRecentAlerts } from "../hooks/useRecentAlerts";
 
 export function DashboardRecentEvents() {
+    const { data, loading, error } = useRecentAlerts(2000); // data: AlertListResults
+    const navigate = useNavigate();
+    const theme = useTheme();
+    const isDark = theme.palette.mode === "dark";
+
+    const alerts = data ?? [];
+
     return (
-        <Grid>
-            <Card elevation={3} sx={{ p: 2 }}>
-                <Typography variant="h6">Recent Events</Typography>
-                <TableContainer component={Paper}>
-                    <Table sx={{ minWidth: 650 }} aria-label="simple table">
+        <Grid
+            size={{xs: 12}}
+            >
+            <Card
+                elevation={0}
+                sx={{
+                    borderRadius: 3,
+                    p: 2.5,
+                    bgcolor: isDark
+                        ? "rgba(15,23,42,0.95)"
+                        : "rgba(255,255,255,0.98)",
+                    border: isDark
+                        ? "1px solid rgba(148,163,184,0.4)"
+                        : "1px solid rgba(191,219,254,0.9)",
+                    boxShadow: isDark
+                        ? "0 20px 50px rgba(15,23,42,0.85)"
+                        : "0 20px 50px rgba(15,23,42,0.15)",
+                    backdropFilter: "blur(10px)",
+                }}
+            >
+                {/*<Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>*/}
+                {/*    Recent Alerts*/}
+                {/*</Typography>*/}
+                {/*<Typography*/}
+                {/*    variant="body2"*/}
+                {/*    sx={{*/}
+                {/*        mb: 2,*/}
+                {/*        color: isDark ? "grey.400" : "text.secondary",*/}
+                {/*        fontSize: 12,*/}
+                {/*    }}*/}
+                {/*>*/}
+                {/*    Latest flood alerts and sensor warnings in the network.*/}
+                {/*</Typography>*/}
+
+                <TableContainer
+                    component={Paper}
+                    sx={{
+                        bgcolor: "transparent",
+                        boxShadow: "none",
+                    }}
+                >
+                    <Table size="small" aria-label="recent alerts table">
                         <TableHead>
                             <TableRow>
-                                <TableCell>Dessert (100g serving)</TableCell>
-                                <TableCell align="right">Calories</TableCell>
-                                <TableCell align="right">Fat&nbsp;(g)</TableCell>
-                                <TableCell align="right">Carbs&nbsp;(g)</TableCell>
-                                <TableCell align="right">Protein&nbsp;(g)</TableCell>
+                                <TableCell>Sensor</TableCell>
+                                <TableCell>Flood Height (m)</TableCell>
+                                <TableCell>Message</TableCell>
+                                <TableCell>Reported On</TableCell>
+                                <TableCell align="right">Actions</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {rows.map((row) => (
-                                <TableRow
-                                    key={row.name}
-                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                >
-                                    <TableCell component="th" scope="row">
-                                        {row.name}
+                            {loading && alerts.length === 0 && (
+                                <TableRow>
+                                    <TableCell colSpan={5}>
+                                        <Typography
+                                            variant="body2"
+                                            sx={{ py: 2, textAlign: "center" }}
+                                        >
+                                            Loading recent alerts…
+                                        </Typography>
                                     </TableCell>
-                                    <TableCell align="right">{row.calories}</TableCell>
-                                    <TableCell align="right">{row.fat}</TableCell>
-                                    <TableCell align="right">{row.carbs}</TableCell>
-                                    <TableCell align="right">{row.protein}</TableCell>
                                 </TableRow>
-                            ))}
+                            )}
+
+                            {error && !loading && (
+                                <TableRow>
+                                    <TableCell colSpan={5}>
+                                        <Typography
+                                            variant="body2"
+                                            color="error"
+                                            sx={{ py: 2, textAlign: "center" }}
+                                        >
+                                            Failed to load recent alerts: {error.message}
+                                        </Typography>
+                                    </TableCell>
+                                </TableRow>
+                            )}
+
+                            {!loading && !error && alerts.length === 0 && (
+                                <TableRow>
+                                    <TableCell colSpan={5}>
+                                        <Typography
+                                            variant="body2"
+                                            sx={{ py: 2, textAlign: "center" }}
+                                        >
+                                            No recent alerts.
+                                        </Typography>
+                                    </TableCell>
+                                </TableRow>
+                            )}
+
+                            {alerts.map((alert) => {
+                                const sensorId = alert.sensor.id;
+                                const floodHeight = alert.reading.flood_m;
+                                const reportedOn = new Date(
+                                    alert.reported_on
+                                ).toLocaleString("en-PH", {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "2-digit",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: false,
+                                });
+
+                                return (
+                                    <TableRow
+                                        key={alert.id}
+                                        hover
+                                        sx={{
+                                            "&:last-child td, &:last-child th": {
+                                                border: 0,
+                                            },
+                                        }}
+                                    >
+                                        {/* Sensor (clickable) */}
+                                        <TableCell>
+                                            <Button
+                                                variant="text"
+                                                size="small"
+                                                sx={{
+                                                    textTransform: "none",
+                                                    px: 0,
+                                                    minWidth: 0,
+                                                }}
+                                                onClick={() =>
+                                                    navigate(`/sensors/${sensorId}`)
+                                                }
+                                            >
+                                                {sensorId}
+                                            </Button>
+                                        </TableCell>
+
+                                        {/* Flood Height */}
+                                        <TableCell>
+                                            {floodHeight.toFixed(2)}
+                                        </TableCell>
+
+                                        {/* Message */}
+                                        <TableCell sx={{ maxWidth: 260 }}>
+                                            <Typography
+                                                variant="body2"
+                                                noWrap
+                                                title={alert.message}
+                                            >
+                                                {alert.message}
+                                            </Typography>
+                                        </TableCell>
+
+                                        {/* Reported On */}
+                                        <TableCell>{reportedOn}</TableCell>
+
+                                        {/* Go to Map */}
+                                        <TableCell align="right">
+                                            <Button
+                                                variant="outlined"
+                                                size="small"
+                                                onClick={() =>
+                                                    navigate(
+                                                        `/map?sensor=${sensorId}`
+                                                    )
+                                                }
+                                            >
+                                                Go to Map
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
                         </TableBody>
                     </Table>
                 </TableContainer>
             </Card>
         </Grid>
-    )
+    );
 }

@@ -1,18 +1,47 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-// import "./index.css";
 import App from "./App";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import {CssBaseline} from "@mui/material";
+import { CssBaseline } from "@mui/material";
 
-const theme = createTheme({
-    palette: {
-        mode: "dark",
-        primary: { main: "#1976d2"},
-        secondary: { main: "#009688"},
-    },
+// 1) Create a context to expose toggle function
+export const ColorModeContext = React.createContext({
+    toggleColorMode: () => {},
 });
 
+function Root() {
+    const [mode, setMode] = React.useState<"light" | "dark">("dark");
+
+    const colorMode = React.useMemo(
+        () => ({
+            toggleColorMode: () => {
+                setMode((prev) => (prev === "light" ? "dark" : "dark" ? "light" : "dark"));
+            },
+        }),
+        []
+    );
+
+    const theme = React.useMemo(
+        () =>
+            createTheme({
+                palette: {
+                    mode,
+                    primary: { main: "#1976d2" },
+                    secondary: { main: "#009688" },
+                },
+            }),
+        [mode]
+    );
+
+    return (
+        <ColorModeContext.Provider value={colorMode}>
+            <ThemeProvider theme={theme}>
+                <CssBaseline />
+                <App />
+            </ThemeProvider>
+        </ColorModeContext.Provider>
+    );
+}
 
 const root = ReactDOM.createRoot(
     document.getElementById("root") as HTMLElement
@@ -20,14 +49,6 @@ const root = ReactDOM.createRoot(
 
 root.render(
     <React.StrictMode>
-        <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <App />
-        </ThemeProvider>
+        <Root />
     </React.StrictMode>
 );
-
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
