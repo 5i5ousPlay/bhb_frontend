@@ -13,8 +13,8 @@ export async function fetchSensorList(
 ): Promise<PaginatedSensorListResponse> {
     const res = await http.get<PaginatedSensorListResponse>("/sensor/list/", {
         params: {
-            page: page + 1,      // DataGrid is 0-based, API is 1-based
-            page_size: pageSize, // remove this line if your API doesn’t support it
+            page: page + 1,
+            page_size: pageSize,
         },
     });
     return res.data;

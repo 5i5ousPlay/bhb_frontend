@@ -19,7 +19,6 @@ export function SensorList() {
 
     const navigate = useNavigate();
 
-    // Build columns *inside* the component so we can use navigate
     const columns: GridColDef[] = useMemo(
         () => [
             {
@@ -32,9 +31,9 @@ export function SensorList() {
                         color="primary"
                         sx={{ textTransform: "none", padding: 0, minWidth: 0 }}
                         onClick={(e) => {
-                            e.stopPropagation(); // don't select the row
+                            e.stopPropagation();
                             const id = params.value as string;
-                            navigate(`/sensors/${id}`); // your detail route
+                            navigate(`/sensors/${id}`);
                         }}
                     >
                         {params.value}
