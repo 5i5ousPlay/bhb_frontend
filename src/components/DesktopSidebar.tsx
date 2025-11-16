@@ -10,6 +10,8 @@ import {
     Typography,
     Box,
     useTheme,
+    IconButton,
+    Tooltip,
 } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
 
@@ -18,6 +20,11 @@ import MapIcon from "@mui/icons-material/Map";
 import SensorsIcon from "@mui/icons-material/Sensors";
 import NotificationImportantIcon from "@mui/icons-material/NotificationImportant";
 import WaterIcon from "@mui/icons-material/Water";
+import DarkModeIcon from "@mui/icons-material/DarkMode";
+import LightModeIcon from "@mui/icons-material/LightMode";
+
+import React from "react";
+import { ColorModeContext } from "../index"; // adjust path if needed
 
 type NavItem = {
     label: string;
@@ -25,7 +32,7 @@ type NavItem = {
     path: string;
 };
 
-export const drawerWidth = 240;
+export const drawerWidth = 250;
 
 const navItems: NavItem[] = [
     { label: "Dashboard", icon: DashboardIcon, path: "/" },
@@ -37,6 +44,9 @@ const navItems: NavItem[] = [
 export function DesktopSidebar() {
     const theme = useTheme();
     const location = useLocation();
+    const colorMode = React.useContext(ColorModeContext);
+
+    const isDark = theme.palette.mode === "dark";
 
     return (
         <Drawer
@@ -47,79 +57,114 @@ export function DesktopSidebar() {
                     width: drawerWidth,
                     boxSizing: "border-box",
                     borderRight: "none",
-                    // subtle gradient background
                     background: `linear-gradient(180deg, ${
-                        theme.palette.mode === "dark"
-                            ? "#020617"
-                            : theme.palette.primary.main
+                        isDark ? "#020617" : theme.palette.primary.main
                     } 0%, ${
-                        theme.palette.mode === "dark"
-                            ? "#0f172a"
-                            : theme.palette.background.default
+                        isDark ? "#0f172a" : theme.palette.background.default
                     } 55%, ${
-                        theme.palette.mode === "dark"
-                            ? "#020617"
-                            : theme.palette.background.paper
+                        isDark ? "#020617" : theme.palette.background.paper
                     } 100%)`,
                     boxShadow: "2px 0 18px rgba(15,23,42,0.4)",
-                    color:
-                        theme.palette.mode === "dark"
-                            ? theme.palette.grey[100]
-                            : theme.palette.grey[50],
+                    color: isDark
+                        ? theme.palette.grey[100]
+                        : theme.palette.grey[50],
                 },
             }}
             variant="permanent"
             anchor="left"
         >
-            {/* Brand header */}
+            {/* Brand header + mode toggle */}
             <Toolbar
                 sx={{
                     minHeight: 72,
-                    px: 2.5,
+                    px: 2.0,
                     display: "flex",
                     alignItems: "center",
+                    justifyContent: "space-between",
                     gap: 1.5,
                 }}
             >
-                <Box
-                    sx={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: "16px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        bgcolor:
-                            theme.palette.mode === "dark"
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                    <Box
+                        sx={{
+                            width: 36,
+                            height: 36,
+                            borderRadius: "16px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            bgcolor: isDark
                                 ? "primary.main"
                                 : "rgba(255,255,255,0.18)",
-                        boxShadow: "0 0 12px rgba(56,189,248,0.5)",
-                    }}
+                            boxShadow: "0 0 12px rgba(56,189,248,0.5)",
+                        }}
+                    >
+                        <WaterIcon fontSize="small" />
+                    </Box>
+
+                    {/* Text block */}
+                    <Box sx={{ lineHeight: 1 }}>
+                        <Typography
+                            variant="h6"
+                            sx={{
+                                fontWeight: 700,
+                                letterSpacing: 0.5,
+                                lineHeight: 1,        // tighten
+                                mb: 0.2,              // small bottom gap
+                            }}
+                        >
+                            Bahaba
+                        </Typography>
+
+                        <Typography
+                            variant="caption"
+                            sx={{
+                                opacity: 0.8,
+                                fontSize: 9,
+                                lineHeight: 1,        // remove extra top spacing
+                                mt: -0.3,             // pull text upward slightly
+                            }}
+                        >
+                            Flood Monitoring Console
+                        </Typography>
+                    </Box>
+                </Box>
+
+
+                <Tooltip
+                    title={isDark ? "Switch to light mode" : "Switch to dark mode"}
                 >
-                    <WaterIcon fontSize="small" />
-                </Box>
-                <Box>
-                    <Typography
-                        variant="h6"
-                        sx={{ fontWeight: 700, letterSpacing: 0.5 }}
+                    <IconButton
+                        size="small"
+                        onClick={colorMode.toggleColorMode}
+                        sx={{
+                            bgcolor: isDark
+                                ? "rgba(15,23,42,0.9)"
+                                : "rgba(255,255,255,0.9)",
+                            border: isDark
+                                ? "1px solid rgba(148,163,184,0.5)"
+                                : "1px solid rgba(148,163,184,0.4)",
+                            "&:hover": {
+                                bgcolor: isDark
+                                    ? "rgba(30,64,175,0.9)"
+                                    : "rgba(59,130,246,0.08)",
+                            },
+                        }}
                     >
-                        Bahaba
-                    </Typography>
-                    <Typography
-                        variant="caption"
-                        sx={{ opacity: 0.8, fontSize: 11 }}
-                    >
-                        Flood Monitoring Console
-                    </Typography>
-                </Box>
+                        {isDark ? (
+                            <LightModeIcon fontSize="small" />
+                        ) : (
+                            <DarkModeIcon fontSize="small" />
+                        )}
+                    </IconButton>
+                </Tooltip>
             </Toolbar>
 
             <Divider
                 sx={{
-                    borderColor:
-                        theme.palette.mode === "dark"
-                            ? "rgba(148,163,184,0.35)"
-                            : "rgba(255,255,255,0.35)",
+                    borderColor: isDark
+                        ? "rgba(148,163,184,0.35)"
+                        : "rgba(255,255,255,0.35)",
                 }}
             />
 
@@ -160,23 +205,20 @@ export function DesktopSidebar() {
                                         minWidth: 32,
                                     },
                                     "&.Mui-selected": {
-                                        bgcolor:
-                                            theme.palette.mode === "dark"
-                                                ? "rgba(56,189,248,0.16)"
-                                                : "rgba(59,130,246,0.12)",
-                                        color:
-                                            theme.palette.mode === "dark"
-                                                ? "#e0f2fe"
-                                                : theme.palette.primary.dark,
+                                        bgcolor: isDark
+                                            ? "rgba(56,189,248,0.16)"
+                                            : "rgba(59,130,246,0.12)",
+                                        color: isDark
+                                            ? "#e0f2fe"
+                                            : theme.palette.primary.dark,
                                         "& .MuiListItemIcon-root": {
                                             color: "inherit",
                                         },
                                     },
                                     "&:hover": {
-                                        bgcolor:
-                                            theme.palette.mode === "dark"
-                                                ? "rgba(148,163,184,0.18)"
-                                                : "rgba(15,23,42,0.06)",
+                                        bgcolor: isDark
+                                            ? "rgba(148,163,184,0.18)"
+                                            : "rgba(15,23,42,0.06)",
                                         transform: "translateX(2px)",
                                     },
                                 }}
@@ -185,7 +227,7 @@ export function DesktopSidebar() {
                                     sx={{
                                         color: isActive
                                             ? "inherit"
-                                            : theme.palette.mode === "dark"
+                                            : isDark
                                                 ? "rgba(148,163,184,0.9)"
                                                 : "rgba(15,23,42,0.7)",
                                     }}
