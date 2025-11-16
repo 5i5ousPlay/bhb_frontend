@@ -18,6 +18,7 @@ function App() {
         <Routes>
           <Route path={"/"} element={<DashboardPage/>} />
           <Route path={"/map"} element={<MapPage/>} />
+            <Route path={"/map?sensor=ID"} element={<MapPage />}/>
             <Route path={"/sensors"} element={<SensorPage />} />
             <Route path={"/alerts"} element={<AlertsPage />} />
             <Route path="/sensors/:sensorId" element={<SensorDetailPage />} />
