@@ -44,8 +44,8 @@ export type SensorAlertList = SensorAlert[]
 export type SensorDetailFeature = Feature<Point, {
     id: string;
     name?: string;
-    readings: ReadingSensorHistory;
-    alerts: SensorAlertList;
+    // readings: ReadingSensorHistory;
+    // alerts: SensorAlertList;
     installed_on: string;
     is_active: boolean;
 }>
