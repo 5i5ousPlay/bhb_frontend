@@ -18,14 +18,21 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import MapIcon from "@mui/icons-material/Map";
 import { useNavigate } from "react-router-dom";
+import { useSensorDetailReadings } from "../hooks/useSensorDetailReadings";
 import { ReadingHistoryGraph } from "../../readings/components/ReadingHistoryGraph";
 import type { SensorDetailFeature } from "../../sensors/types";
 
-export function SensorDetail({ sensor }: { sensor: SensorDetailFeature }) {
+export function SensorDetail({
+                                 sensor,
+                                 sensorId,
+                             }: {
+    sensor: SensorDetailFeature;
+    sensorId: string | undefined;
+}) {
     const coords = sensor.geometry.coordinates;
     const lon = coords?.[0];
     const lat = coords?.[1];
-    const readings = sensor.properties.readings ?? [];
+    const { readings, loading, error } = useSensorDetailReadings(2000, sensorId);
 
     const installedOn = sensor.properties.installed_on
         ? new Date(sensor.properties.installed_on).toLocaleString()
@@ -188,7 +195,11 @@ export function SensorDetail({ sensor }: { sensor: SensorDetailFeature }) {
                                         : "rgba(255,255,255,0.02)",
                             }}
                         >
-                            <ReadingHistoryGraph sensorHistory={readings} />
+                            <ReadingHistoryGraph
+                                sensorHistory={readings}
+                                loading={loading}
+                                error={error}
+                            />
                         </Paper>
                     </Box>
                 </CardContent>

@@ -24,15 +24,6 @@ export function DashboardLineChart() {
 
     const { data, loading, error, refetch } = useFloodTrend(mode, 2000);
 
-    const xLabels =
-        data?.map((d) =>
-            new Date(d.ts).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-            })
-        ) ?? [];
-    const yValues = data?.map((d) => d.avg_flood) ?? [];
-
     const handleModeChange = (
         _event: React.MouseEvent<HTMLElement>,
         value: "hour" | "minute" | null
@@ -40,6 +31,43 @@ export function DashboardLineChart() {
         if (!value) return;
         setMode(value);
     };
+
+    // --- Sliding window logic ---
+    // Decide how much history to show depending on mode
+    const WINDOW_MINUTES = mode === "minute" ? 60 : 24 * 60; // 1h vs 24h
+    const FALLBACK_POINTS = 50;
+
+    let xData: Date[] = [];
+    let yData: number[] = [];
+    let windowStart: Date | undefined;
+    let windowEnd: Date | undefined;
+
+    if (data && data.length > 0) {
+        // 1) Sort by timestamp (just to be safe)
+        const sorted = [...data].sort(
+            (a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime()
+        );
+
+        // 2) Determine sliding window: [latest - WINDOW_MINUTES, latest]
+        const latestTime = new Date(sorted[sorted.length - 1].ts);
+        windowEnd = latestTime;
+        windowStart = new Date(
+            latestTime.getTime() - WINDOW_MINUTES * 60 * 1000
+        );
+
+        // 3) Filter data to that window
+        const windowed = sorted.filter((d) => {
+            const t = new Date(d.ts).getTime();
+            return t >= windowStart!.getTime() && t <= windowEnd!.getTime();
+        });
+
+        const effective = windowed.length > 0 ? windowed : sorted.slice(-FALLBACK_POINTS);
+
+        xData = effective.map((d) => new Date(d.ts));
+        yData = effective.map((d) => d.avg_flood);
+    }
+
+    const hasData = xData.length > 0;
 
     return (
         <Card
@@ -146,11 +174,18 @@ export function DashboardLineChart() {
                     >
                         Failed to load flood trend.
                     </Typography>
+                ) : !hasData && !loading ? (
+                    <Typography
+                        variant="body2"
+                        sx={{ mt: 4, textAlign: "center" }}
+                    >
+                        No trend data available yet.
+                    </Typography>
                 ) : (
                     <LineChart
                         series={[
                             {
-                                data: yValues,
+                                data: yData,
                                 label: "Avg flood height (m)",
                                 showMark: false,
                                 curve: "monotoneX",
@@ -158,12 +193,13 @@ export function DashboardLineChart() {
                         ]}
                         xAxis={[
                             {
-                                scaleType: "point",
-                                data: xLabels,
+                                scaleType: "time",
+                                data: xData,
+                                label: "Time",
+                                min: windowStart,
+                                max: windowEnd,
                                 tickLabelStyle: {
                                     fontSize: 11,
-                                    angle: -45,        // rotate
-                                    textAnchor: "end", // align nicely after rotation
                                 },
                             },
                         ]}
@@ -175,7 +211,7 @@ export function DashboardLineChart() {
                                 },
                             },
                         ]}
-                        margin={{ ...margin, bottom: 50 }} // a bit more space for rotated labels
+                        margin={{ ...margin, bottom: 40 }}
                         loading={loading}
                         sx={{
                             "& .MuiLineElement-root": {
@@ -188,7 +224,7 @@ export function DashboardLineChart() {
                                 borderRadius: 2,
                             },
                             height: "100%",
-                            width: "100%"
+                            width: "100%",
                         }}
                     />
                 )}

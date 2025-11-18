@@ -7,14 +7,27 @@ import {
     ListItemText,
     Divider,
     Button,
-    Collapse,
 } from "@mui/material";
 import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import { useState } from "react";
 import type { SensorAlertList } from "../../sensors/types";
+import {LoadingScreen} from "../../../components/LoadingScreen";
 
-export function SensorAlertsCard({ alerts }: { alerts: SensorAlertList }) {
+export function SensorAlertsCard(props: {
+    alerts: SensorAlertList,
+    loading: boolean,
+    error: Error | null
+}) {
+    const { alerts, loading, error } = props;
     const [expanded, setExpanded] = useState(false);
+
+    if (loading) {
+        return <LoadingScreen />;
+    }
+
+    if (error) {
+        return <div>Error loading sensor: {error.message}</div>;
+    }
 
     const MAX_VISIBLE = 10;
 

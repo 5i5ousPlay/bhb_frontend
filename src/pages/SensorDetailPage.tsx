@@ -13,6 +13,7 @@ import { DesktopSidebar } from "../components/DesktopSidebar";
 import { SensorDetail } from "../features/sensors/components/SensorDetail";
 import { SensorAlertsCard } from "../features/sensors/components/SensorAlertsCard";
 import { useSensorDetail } from "../features/sensors/hooks/useSensorDetail";
+import { useSensorDetailAlerts } from "../features/sensors/hooks/useSensorDetailAlerts";
 import { LoadingScreen } from "../components/LoadingScreen";
 
 export function SensorDetailPage() {
@@ -21,12 +22,12 @@ export function SensorDetailPage() {
     const isDark = theme.palette.mode === "dark";
 
     const { data, loading, error } = useSensorDetail(sensorId);
+    const { alerts, loading: _loading, error: _error } = useSensorDetailAlerts(2000, sensorId);
 
     if (loading && !data) return <LoadingScreen />;
     if (error) return <div>Error loading sensor: {error.message}</div>;
     if (!data) return <div>Sensor not found.</div>;
 
-    const alerts = data.properties.alerts ?? [];
 
     return (
         <Box sx={{ display: "flex" }}>
@@ -112,7 +113,10 @@ export function SensorDetailPage() {
                                     p: 2.5,
                                 }}
                             >
-                                <SensorDetail sensor={data} />
+                                <SensorDetail
+                                    sensor={data}
+                                    sensorId={sensorId}
+                                />
                             </Card>
                         </Grid>
 
@@ -137,7 +141,11 @@ export function SensorDetailPage() {
                                     p: 2.5,
                                 }}
                             >
-                                <SensorAlertsCard alerts={alerts} />
+                                <SensorAlertsCard
+                                    alerts={alerts}
+                                    loading={_loading}
+                                    error={_error}
+                                />
                             </Card>
                         </Grid>
                     </Grid>

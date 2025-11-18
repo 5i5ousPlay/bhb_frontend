@@ -1,6 +1,6 @@
 import {http} from "../../../api/httpClient";
 import { SensorFeatureCollection, PaginatedSensorListResponse,
-    SensorDetailFeature } from "../types";
+    SensorDetailFeature, SensorAlertList, ReadingSensorHistory } from "../types";
 
 export async function fetchSensors(): Promise<SensorFeatureCollection> {
     const res =  await http.get<SensorFeatureCollection>("/sensor/live-sensors/");
@@ -24,3 +24,15 @@ export async function fetchSensorDetail(sensorId?: string): Promise<SensorDetail
     const res = await http.get<SensorDetailFeature>(`sensor/detail/${sensorId}`);
     return res.data
 }
+
+export async function fetchSensorDetailReadings(sensorId?: string): Promise<ReadingSensorHistory> {
+    const res = await http.get<ReadingSensorHistory>(`/sensor/detail/${sensorId}/readings`);
+    return res.data
+}
+
+
+export async function fetchSensorDetailAlerts(sensorId?: string): Promise<SensorAlertList> {
+    const res = await http.get<SensorAlertList>(`/sensor/detail/${sensorId}/alerts`);
+    return res.data
+}
+
